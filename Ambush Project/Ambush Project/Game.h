@@ -5,7 +5,10 @@
 #include "InputManager.h"
 #include "GameTime.h"
 #include <chrono>
+#include <thread>
+#include <iostream>
 #include "Node.h"
+#include "Semaphore.h"
 
 using namespace std;
 

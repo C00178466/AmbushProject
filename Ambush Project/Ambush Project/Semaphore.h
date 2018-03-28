@@ -7,17 +7,16 @@ using namespace std;
 class Semaphore
 {
 public:
+	Semaphore()
+	{
+		count = 1;
+	}
 	~Semaphore() {}
 
 	int count;
 	mutex mtx;
 	condition_variable cv;
 
-protected:
-	Semaphore(int i) : count(i)
-	{
-		
-	}
 };
 
 //Wait Function
