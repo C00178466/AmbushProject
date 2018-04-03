@@ -9,6 +9,8 @@
 #include <iostream>
 #include "Node.h"
 #include "Semaphore.h"
+#include "Player.h"
+#include "GameWorld.h"
 
 using namespace std;
 
@@ -29,6 +31,7 @@ private:
 	float current;
 	SDL_Window* m_window;
 	SDL_Renderer* m_renderer;
+	SDL_Surface* m_surface;
 	SDL_Event m_event;
 
 	int screenWidth;
@@ -36,4 +39,10 @@ private:
 
 	EventListener* m_eventListener;
 	InputManager* m_input;
+
+	//Map
+	GameWorld* gameWorld;
+
+	//Characters
+	Player* player;
 };
