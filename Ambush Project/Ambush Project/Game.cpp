@@ -2,14 +2,19 @@
 
 const float TRIGGER = 0.2f;
 
+SDL_Renderer* m_renderer;
+
+//Characters
+Player* player;
+Enemy* enemy;
+
 int numberOfUsers;
 Semaphore mutexR;
 Semaphore rw;
 
-int Num_Threads;
-vector<thread> threadPool;
-
-void LoopFunction();
+int ThreadFunction(void * ptr);
+int LoadPlayer(void * ptr);
+int LoadEnemy(void * ptr);
 
 Game::Game()
 {
@@ -42,7 +47,6 @@ bool Game::Init()
 
 	gameWorld = new GameWorld();
 	gameWorld->Init(m_renderer);
-	player = new Player(m_renderer, "Player.png");
 
 	m_eventListener = new EventListener();
 	m_input = new InputManager(&m_event, m_eventListener);
@@ -53,97 +57,38 @@ bool Game::Init()
 	gameTime = GameTime::getInstance();
 	last = gameTime->running();
 
-	//max threads the system can support
-	//Num_Threads = thread::hardware_concurrency();
 	Num_Threads = 5;
 
+	//Create Thread Pool
 	for (int i = 0; i < Num_Threads; i++)
 	{
-		//threadPool.push_back(thread(LoopFunction));
-		//threadPool.at(i).join();
+		SDL_Thread* temp;
+
+		//first thread in pool
+		if (i == 1)
+			temp = SDL_CreateThread(LoadPlayer, "FindPathFunction", (void *)NULL);
+		if (i == 2)
+			temp = SDL_CreateThread(LoadEnemy, "FindPathFunction", (void *)NULL);
+		else
+			temp = SDL_CreateThread(ThreadFunction, "ThreadFunction", (void *)NULL);
+
+		if (NULL != temp)
+		{
+			SDLThreadPool.push_back(temp);
+		}
 	}
 
-	for (int i = 0; i < Num_Threads; i++)
+	int threadCount = 0;
+	vector<SDL_Thread*>::iterator iter;
+
+	for (iter = SDLThreadPool.begin(); iter != SDLThreadPool.end(); iter++)
 	{
-		//threadPool.push_back(thread(LoopFunction));
-		//threadPool.at(i).join();
+		int threadReturnValue;
+
+		cout << "Waiting for thread : " << threadCount++ << endl;
+		SDL_WaitThread(*iter, &threadReturnValue);
 	}
 
-	//for (int y = 0; y < m; y++)
-	//{
-	//	for (int x = 0; x < n; x++)
-	//	{
-	//		map[x][y] = 0;
-	//	}
-	//}
-
-	//for (int x = n / 8; x < n * 7 / 8; x++)
-	//{
-	//	map[x][m / 2] = 1;
-	//}
-
-	//for (int y = m / 8; y < m * 7 / 8; y++)
-	//{
-	//	map[n / 2][y] = 1;
-	//	//map[(n / 4) * 3][y] = 1;
-	//}
-
-	//////randomly select start and finish locations
-	//int xA, yA, xB, yB;
-	//xA = 0;
-	//yA = 0;
-	////xB = n - 1;
-	////yB = n - 1;
-	//xB = 21;
-	//yB = 31;
-
-	//cout << "Map Size (X,Y): " << n << "," << m << endl;
-	//cout << "Start: " << xA << "," << yA << endl;
-	//cout << "Finish: " << xB << "," << yB << endl;
-	//// get the route
-	//clock_t start = clock();
-	//string route = FindPath(xA, yA, xB, yB);
-	//if (route == "") cout << "An empty route generated!" << endl;
-	//clock_t end = clock();
-	//double time_elapsed = double(end - start);
-	//cout << "Time to calculate the route (ms): " << time_elapsed << endl;
-	//cout << "Route:" << endl;
-	//cout << route << endl << endl;
-
-	//// follow the route on the map and display it 
-	//if (route.length()>0)
-	//{
-	//	int j; char c;
-	//	int x = xA;
-	//	int y = yA;
-	//	map[x][y] = 2;
-	//	for (int i = 0; i<route.length(); i++)
-	//	{
-	//		c = route.at(i);
-	//		j = atoi(&c);
-	//		x = x + dx[j];
-	//		y = y + dy[j];
-	//		map[x][y] = 3;
-	//	}
-	//	map[x][y] = 4;
-
-	//	// display the map with the route
-	//	for (int y = 0; y<m; y++)
-	//	{
-	//		for (int x = 0; x<n; x++)
-	//			if (map[x][y] == 0)
-	//				cout << ".";
-	//			else if (map[x][y] == 1)
-	//				cout << "O"; //obstacle
-	//			else if (map[x][y] == 2)
-	//				cout << "S"; //start
-	//			else if (map[x][y] == 3)
-	//				cout << "R"; //route
-	//			else if (map[x][y] == 4)
-	//				cout << "F"; //finish
-	//		cout << endl;
-	//	}
-	//}
 	return true;
 }
 
@@ -158,14 +103,12 @@ void Game::Update()
 		if ((current - last) > TRIGGER)
 		{
 			gameWorld->Update();
-			player->Update();
+			player->Update(m_eventListener);
 
-			//cout << "Updating" << endl;
 			last = current;
 		}
 
 		Sleep(500);
-		//cout << ".";
 
 		Render();
 	}
@@ -181,10 +124,14 @@ void Game::Render()
 	//Draw Player
 	player->Render(m_renderer);
 
+	//Draw enemies
+	enemy->Render(m_renderer);
+
 	SDL_RenderPresent(m_renderer);
 }
 
-void LoopFunction()
+//Find path
+int ThreadFunction(void * ptr)
 {
 	while (true)
 	{
@@ -214,5 +161,18 @@ void LoopFunction()
 		V(mutexR);
 
 		this_thread::sleep_for(chrono::seconds(1));
+		return 0;
 	}
+}
+
+int LoadPlayer(void * ptr)
+{
+	player = new Player(m_renderer, "Player.png");
+	return 0;
+}
+
+int LoadEnemy(void * ptr)
+{
+	enemy = new Enemy(m_renderer, "Enemy.png");
+	return 0;
 }

@@ -61,11 +61,13 @@ void GameWorld::Init(SDL_Renderer* r)
 
 	m_wallTex = IMG_LoadTexture(r, "Wall.jpg");
 	m_groundTex = IMG_LoadTexture(r, "Ground.png");
+	
+	FindPathThroughWorld();
 }
 
 void GameWorld::Update()
 {
-
+	
 }
 
 void GameWorld::Render(SDL_Renderer* r)
@@ -88,6 +90,71 @@ void GameWorld::Render(SDL_Renderer* r)
 			{
 				SDL_RenderCopy(r, m_wallTex, NULL, &temp);
 			}
+		}
+	}
+}
+
+void GameWorld::InitWorld()
+{
+	
+}
+
+void GameWorld::FindPathThroughWorld()
+{
+	//randomly select start and finish locations
+	int xA, yA, xB, yB;
+	xA = 2;
+	yA = 2;
+	//xB = n - 1;
+	//yB = n - 1;
+	xB = 21;
+	yB = 25;
+
+	cout << "Map Size (X,Y): " << MAP_WIDTH << "," << MAP_HEIGHT << endl;
+	cout << "Start: " << xA << "," << yA << endl;
+	cout << "Finish: " << xB << "," << yB << endl;
+	// get the route
+	clock_t start = clock();
+	string route = FindPath(xA, yA, xB, yB);
+	if (route == "") cout << "An empty route generated!" << endl;
+	clock_t end = clock();
+	double time_elapsed = double(end - start);
+	cout << "Time to calculate the route (ms): " << time_elapsed << endl;
+	cout << "Route:" << endl;
+	cout << route << endl << endl;
+
+	// follow the route on the map and display it 
+	if (route.length()>0)
+	{
+		int j; char c;
+		int x = xA;
+		int y = yA;
+		//level[x][y] = 2;
+		/*for (int i = 0; i<route.length(); i++)
+		{
+			c = route.at(i);
+			j = atoi(&c);
+			x = x + dx[j];
+			y = y + dy[j];
+			level[x][y] = 3;
+		}
+		level[x][y] = 4;*/
+
+		// display the map with the route
+		for (int y = 0; y<MAP_HEIGHT; y++)
+		{
+			for (int x = 0; x<MAP_WIDTH; x++)
+				if (level[x][y] == 0)
+					cout << ".";
+				else if (level[x][y] == 1)
+					cout << "O"; //obstacle
+				//else if (level[x][y] == 2)
+				//	cout << "S"; //start
+				//else if (level[x][y] == 3)
+				//	cout << "R"; //route
+				//else if (level[x][y] == 4)
+				//	cout << "F"; //finish
+			cout << endl;
 		}
 	}
 }

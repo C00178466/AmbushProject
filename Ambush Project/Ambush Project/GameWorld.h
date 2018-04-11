@@ -2,6 +2,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
+#include <vector>
+#include <thread>
+#include "Node.h"
 
 using namespace std;
 
@@ -14,6 +17,9 @@ public:
 	void Init(SDL_Renderer* r);
 	void Update();
 	void Render(SDL_Renderer* r);
+
+	void InitWorld();
+	void FindPathThroughWorld();
 
 private:
 	static const int MAP_HEIGHT = 30;

@@ -1,16 +1,17 @@
 #pragma once
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_thread.h>
 #include "EventListener.h"
 #include "InputManager.h"
 #include "GameTime.h"
 #include <chrono>
-#include <thread>
 #include <iostream>
 #include "Node.h"
 #include "Semaphore.h"
 #include "Player.h"
 #include "GameWorld.h"
+#include "Enemy.h"
 
 using namespace std;
 
@@ -30,7 +31,6 @@ private:
 	float last;
 	float current;
 	SDL_Window* m_window;
-	SDL_Renderer* m_renderer;
 	SDL_Surface* m_surface;
 	SDL_Event m_event;
 
@@ -43,6 +43,7 @@ private:
 	//Map
 	GameWorld* gameWorld;
 
-	//Characters
-	Player* player;
+	//Threading
+	int Num_Threads;
+	vector<SDL_Thread*> SDLThreadPool;
 };
